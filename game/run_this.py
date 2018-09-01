@@ -9,6 +9,7 @@ action_list = {0: [0, -1], 1: [0, 1], 2: [-1, 0], 3: [1, 0], 4: [-1, -1], 5: [1,
 
 MAP_LENGTH = 14
 
+random.seed(1)
 
 def get_game_map():
     game_map = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -50,12 +51,12 @@ def reset_observation(game_map, hero, enemy, daoju_list, safe_list):
     return observation
 
 
-def get_reward(action, game_map, hero, enemy, daoju_list, safe_list):
+def get_reward(action, observation, hero, enemy, daoju_list, safe_list):
     _action = action_list[action]
 
     new_pos = [hero[0] + _action[0], hero[1] + _action[1]]
 
-    if game_map[new_pos[1]][new_pos[0]] == 1:
+    if observation[new_pos[0]][new_pos[1]][2] == 1.0:
         return -1.0, True
 
     if new_pos in safe_list:
@@ -172,7 +173,7 @@ def run_this():
 
             while True:
                 step += 1
-                reward, done = get_reward(action, game_map, _hero, enemy, daoju_list, _safe_list)
+                reward, done = get_reward(action, observation, _hero, enemy, daoju_list, _safe_list)
 
                 _hero, _observation = get_new_observation(action, _hero, daoju_list, observation)
                 observation = _observation
