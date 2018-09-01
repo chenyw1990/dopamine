@@ -30,8 +30,6 @@ import tensorflow as tf
 
 import gin.tf
 
-slim = tf.contrib.slim
-
 
 OBSERVATION_SHAPE = 14  # Size of a downscaled Atari 2600 frame.
 STACK_SIZE = 5  # Number of frames in the state stack.
@@ -79,6 +77,7 @@ class DQNAgent(object):
                epsilon_decay_period=250000,
                tf_device='/cpu:*',
                use_staging=True,
+               eval_mode=False,
                max_tf_checkpoints_to_keep=3,
                optimizer=tf.train.RMSPropOptimizer(
                    learning_rate=0.00025,
@@ -138,7 +137,7 @@ class DQNAgent(object):
     self.epsilon_eval = epsilon_eval
     self.epsilon_decay_period = epsilon_decay_period
     self.update_period = update_period
-    self.eval_mode = False
+    self.eval_mode = eval_mode
     self.training_steps = 0
     self.optimizer = optimizer
 
@@ -182,12 +181,17 @@ class DQNAgent(object):
     """
     net = tf.cast(state, tf.float32)
     net = tf.div(net, 255.)
-    net = slim.conv2d(net, 32, [8, 8], stride=4)
-    net = slim.conv2d(net, 64, [4, 4], stride=2)
-    net = slim.conv2d(net, 64, [3, 3], stride=1)
-    net = slim.flatten(net)
-    net = slim.fully_connected(net, 512)
-    q_values = slim.fully_connected(net, self.num_actions, activation_fn=None)
+
+    net = tf.layers.conv2d(inputs=net, filters=32, kernel_size=[8, 8], padding="same", activation=tf.nn.relu, strides=4)
+    net = tf.layers.conv2d(inputs=net, filters=64, kernel_size=[4, 4], padding="same", activation=tf.nn.relu, strides=4)
+    net = tf.layers.conv2d(inputs=net, filters=64, kernel_size=[3, 3], padding="same", activation=tf.nn.relu, strides=4)
+
+    net = tf.reshape(net, [-1, OBSERVATION_SHAPE * OBSERVATION_SHAPE * 64])
+
+    net = tf.layers.dense(inputs=net, units=512, activation=tf.nn.relu)
+
+    q_values = tf.layers.dense(inputs=net, units=self.num_actions, activation=None)
+
     return self._get_network_type()(q_values)
 
   def _build_networks(self):

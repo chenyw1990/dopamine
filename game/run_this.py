@@ -140,13 +140,21 @@ def run_this():
 
     sess = tf.Session()
 
-    ai_agent = AIAgent(sess, 8)
+    ai_agent = AIAgent(sess, 8, tf_device='/gpu:*')
+    # ai_agent = AIAgent(sess, 8, tf_device='/cpu:*', eval_mode=False)
 
-    # 初始化 网络
     sess.run(tf.global_variables_initializer())
 
-    for index in range(len(pool)):
+    ai_agent.unbundle('checkpoint', 149, {})
+
+    pool_len = len(pool)
+
+    print("pool lenght is " + str(pool_len))
+
+    for index in range(149, pool_len):
         hero, enemy = pool[index]
+
+        print("index is " + str(index) + "hero is " + str(hero) + "enemy is" + str(enemy))
 
         first_daoju = get_daoju_list(game_map, hero, enemy, [0, 0])
         second_daoju = get_daoju_list(game_map, hero, enemy, first_daoju)
@@ -171,25 +179,32 @@ def run_this():
             observation = reset_observation(game_map, _hero, enemy, daoju_list, _safe_list)
             action = ai_agent.begin_episode(observation)
 
+            # move_list = [_hero]
             while True:
                 step += 1
                 reward, done = get_reward(action, observation, _hero, enemy, daoju_list, _safe_list)
 
                 _hero, _observation = get_new_observation(action, _hero, daoju_list, observation)
                 observation = _observation
+                # move_list.append(_hero)
 
                 if done:
+                    # print(str(move_list))
+
                     ai_agent.end_episode(reward)
 
                     if reward == 1.0:
                         reward_count += 1
 
                     if reward_count > 2:
-                        ai_agent.bundle_and_checkpoint('/Users/chenyawei/PycharmProjects/dopamine/checkpoint', 2)
                         over = True
                     break
                 else:
                     action = ai_agent.step(reward, observation)
+
+        ai_agent.bundle_and_checkpoint('checkpoint', index)
+
+    ai_agent.bundle_and_checkpoint('checkpoint', pool_len)
 
     sess.close()
 
