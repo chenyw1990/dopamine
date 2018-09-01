@@ -141,7 +141,8 @@ def run_this():
 
     ai_agent = AIAgent(sess, 8)
 
-
+    # 初始化 网络
+    sess.run(tf.global_variables_initializer())
 
     for index in range(len(pool)):
         hero, enemy = pool[index]
