@@ -56,7 +56,7 @@ def get_reward(action, observation, hero, enemy, daoju_list, safe_list):
 
     new_pos = [hero[0] + _action[0], hero[1] + _action[1]]
 
-    if observation[new_pos[0]][new_pos[1]][2] == 1.0:
+    if observation[new_pos[0]][new_pos[1]][2] == 1.0 or new_pos == enemy:
         return -1.0, True
 
     if new_pos in safe_list:
@@ -141,25 +141,30 @@ def run_this():
     sess = tf.Session()
 
     ai_agent = AIAgent(sess, 8, tf_device='/gpu:*')
-    # ai_agent = AIAgent(sess, 8, tf_device='/cpu:*', eval_mode=False)
+    # ai_agent = AIAgent(sess, 8, tf_device='/cpu:*', epsilon_eval=0.0, eval_mode=True)
 
     sess.run(tf.global_variables_initializer())
 
-    ai_agent.unbundle('checkpoint', 149, {})
+    # writer = tf.summary.FileWriter("/tmp/tensor_logs/", sess.graph)
+
+    ai_agent.unbundle('checkpoint', 4609, {})
 
     pool_len = len(pool)
 
     print("pool lenght is " + str(pool_len))
 
-    for index in range(149, pool_len):
+    for index in range(4608, pool_len):
+        # random_index = random.randint(0, pool_len)
         hero, enemy = pool[index]
 
-        print("index is " + str(index) + "hero is " + str(hero) + "enemy is" + str(enemy))
+        print("index is " + str(index) + ". hero is " + str(hero) + ". enemy is" + str(enemy))
 
         first_daoju = get_daoju_list(game_map, hero, enemy, [0, 0])
         second_daoju = get_daoju_list(game_map, hero, enemy, first_daoju)
 
         daoju_list = [first_daoju, second_daoju]
+
+        # print("daoju list is " + str(daoju_list))
 
         _safe_list = []
 
