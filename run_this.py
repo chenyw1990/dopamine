@@ -9,7 +9,7 @@ action_list = {0: [0, -1], 1: [0, 1], 2: [-1, 0], 3: [1, 0], 4: [-1, -1], 5: [1,
 
 MAP_LENGTH = 14
 
-random.seed(1)
+# random.seed(1)
 
 def get_game_map():
     game_map = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -141,21 +141,21 @@ def run_this():
     sess = tf.Session()
 
     # ai_agent = AIAgent(sess, 8, tf_device='/gpu:*')
-    ai_agent = AIAgent(sess, 8, tf_device='/cpu:*', epsilon_eval=0.001, eval_mode=False)
+    ai_agent = AIAgent(sess, 8, tf_device='/cpu:*', epsilon_eval=0.000, eval_mode=True)
 
     sess.run(tf.global_variables_initializer())
 
     # writer = tf.summary.FileWriter("/tmp/tensor_logs/", sess.graph)
 
-    ai_agent.unbundle('checkpoint', 964, {})
+    ai_agent.unbundle('checkpoint', 963, {})
 
     pool_len = len(pool)
 
     print("pool lenght is " + str(pool_len))
 
-    for index in range(964, pool_len):
-        # random_index = random.randint(0, pool_len)
-        hero, enemy = pool[index]
+    for index in range(993, pool_len):
+        random_index = random.randint(0, pool_len)
+        hero, enemy = pool[random_index]
 
         print("index is " + str(index) + ". hero is " + str(hero) + ". enemy is" + str(enemy))
 
@@ -164,7 +164,7 @@ def run_this():
 
         daoju_list = [first_daoju, second_daoju]
 
-        # print("daoju list is " + str(daoju_list))
+        print("daoju list is " + str(daoju_list))
 
         _safe_list = []
 
@@ -184,17 +184,17 @@ def run_this():
             observation = reset_observation(game_map, _hero, enemy, daoju_list, _safe_list)
             action = ai_agent.begin_episode(observation)
 
-            # move_list = [_hero]
+            move_list = [_hero]
             while True:
                 step += 1
                 reward, done = get_reward(action, observation, _hero, enemy, daoju_list, _safe_list)
 
                 _hero, _observation = get_new_observation(action, _hero, daoju_list, observation)
                 observation = _observation
-                # move_list.append(_hero)
+                move_list.append(_hero)
 
                 if done:
-                    # print(str(move_list))
+                    print(str(move_list))
 
                     ai_agent.end_episode(reward)
 
@@ -207,9 +207,9 @@ def run_this():
                 else:
                     action = ai_agent.step(reward, observation)
 
-        ai_agent.bundle_and_checkpoint('checkpoint', index)
+        # ai_agent.bundle_and_checkpoint('checkpoint', index)
 
-    ai_agent.bundle_and_checkpoint('checkpoint', pool_len)
+    # ai_agent.bundle_and_checkpoint('checkpoint', pool_len)
 
     sess.close()
 

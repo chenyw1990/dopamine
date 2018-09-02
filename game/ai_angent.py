@@ -39,15 +39,16 @@ class AIAgent(dqn_agent.DQNAgent):
     def _network_template(self, state):
         net = tf.cast(state, tf.float32)
 
-        net = tf.layers.conv2d(inputs=net, filters=32, kernel_size=[5, 5], padding="same", activation=tf.nn.relu)
+        net = tf.layers.conv2d(inputs=net, filters=16, kernel_size=[5, 5], padding="same", strides=(2, 2),
+                               activation=tf.nn.relu)
 
-        net = tf.layers.conv2d(inputs=net, filters=64, kernel_size=[3, 3], padding="same", activation=tf.nn.relu)
+        net = tf.layers.conv2d(inputs=net, filters=32, kernel_size=[3, 3], padding="same", activation=tf.nn.relu)
 
-        net = tf.layers.conv2d(inputs=net, filters=64, kernel_size=[3, 3], padding="same", activation=tf.nn.relu)
+        net = tf.layers.conv2d(inputs=net, filters=32, kernel_size=[3, 3], padding="same", activation=tf.nn.relu)
 
-        net = tf.reshape(net, [-1, 14 * 14 * 64])
+        net = tf.reshape(net, [-1, 7 * 7 * 32])
 
-        net = tf.layers.dense(inputs=net, units=512, activation=tf.nn.relu)
+        net = tf.layers.dense(inputs=net, units=256, activation=tf.nn.relu)
 
         q_values = tf.layers.dense(inputs=net, units=self.num_actions, activation=None)
 
